@@ -1,0 +1,342 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pairing Code Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #001327;
+            color: #00ffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.15;
+        }
+
+        .generator-container {
+            background-color: rgba(0, 30, 60, 0.7);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 20px #00ffff;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            max-width: 350px;
+            width: 100%;
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 10px #00ffff; }
+            to { box-shadow: 0 0 20px #00ffff, 0 0 30px #00a8a8; }
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 30px;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff;
+            font-size: 24px;
+        }
+
+        .input-container {
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            background-color: rgba(0, 10, 20, 0.7);
+            border: 1px solid #00ffff;
+            border-radius: 5px;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            box-sizing: border-box;
+            font-size: 14px;
+            text-align: center;
+            box-shadow: 0 0 5px #00ffff;
+            outline: none;
+        }
+
+        input:focus {
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        .code-display {
+            font-size: 24px;
+            padding: 15px;
+            background-color: rgba(0, 10, 20, 0.7);
+            border: 1px solid #00ffff;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 5px #00ffff;
+            box-shadow: 0 0 5px #00ffff inset;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            margin: 0 5px;
+            background-color: rgba(0, 40, 70, 0.8);
+            color: #00ffff;
+            border: 1px solid #00ffff;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            transition: all 0.3s;
+            box-shadow: 0 0 5px #00ffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:hover {
+            background-color: rgba(0, 60, 100, 0.8);
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        button i {
+            margin-right: 5px;
+        }
+
+        .social-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .social-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(0, 40, 70, 0.8);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            font-size: 18px;
+            transition: all 0.3s;
+            box-shadow: 0 0 5px #00ffff;
+            text-decoration: none;
+        }
+
+        .social-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        #notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: rgba(0, 40, 70, 0.9);
+            color: #00ffff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #00ffff;
+            display: none;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-canvas"></canvas>
+    <div id="notification"></div>
+
+    <div class="generator-container">
+        <img src="https://bit.ly/41Bu9fc" alt="FENIX ID" class="logo">
+        <h1>Pairing Code Generator</h1>
+        
+        <div class="input-container">
+            <input type="text" id="phoneNumber" placeholder="Enter WhatsApp Number (with country code)" />
+        </div>
+        
+        <div class="code-display" id="pairCode">XXXXXXXX</div>
+        
+        <div class="button-container">
+            <button id="generateBtn"><i class="fas fa-sync-alt"></i> Generate</button>
+            <button id="copyBtn"><i class="fas fa-copy"></i> Copy</button>
+        </div>
+        
+        <div class="social-buttons">
+            <a href="https://wa.me/94773010580" class="social-button" target="_blank"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://t.me/fenix_tools" class="social-button" target="_blank"><i class="fab fa-telegram"></i></a>
+            <a href="https://www.youtube.com/" class="social-button" target="_blank"><i class="fab fa-youtube"></i></a>
+        </div>
+    </div>
+
+    <script>
+        // Matrix effect
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        const characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%\"'#&_(),.;:?!\\|{}<>[]^~";
+        const fontSize = 14;
+        const columns = Math.floor(canvas.width / fontSize);
+
+        const drops = [];
+        for (let i = 0; i < columns; i++) {
+            drops[i] = Math.floor(Math.random() * -30);
+        }
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 19, 39, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#00ffff';
+            ctx.font = `${fontSize}px monospace`;
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = characters[Math.floor(Math.random() * characters.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.98) {
+                    drops[i] = 0;
+                }
+
+                drops[i]++;
+            }
+
+            requestAnimationFrame(drawMatrix);
+        }
+
+        drawMatrix();
+
+        // Functionality
+        const phoneNumberInput = document.getElementById('phoneNumber');
+        const pairCodeElem = document.getElementById('pairCode');
+        const generateBtn = document.getElementById('generateBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const notification = document.getElementById('notification');
+
+        function showNotification(message, duration = 2000) {
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, duration);
+        }
+
+        generateBtn.addEventListener('click', () => {
+            const phoneNumber = phoneNumberInput.value.trim();
+
+            if (!phoneNumber) {
+                pairCodeElem.textContent = 'ERROR';
+                pairCodeElem.style.color = '#ff3333';
+                showNotification('Please enter a WhatsApp number');
+                setTimeout(() => {
+                    pairCodeElem.textContent = 'XXXXXXXX';
+                    pairCodeElem.style.color = '#00ffff';
+                }, 2000);
+                return;
+            }
+
+            // Clean number - remove non-numeric characters
+            const cleanNumber = phoneNumber.replace(/\D/g, '');
+
+            if (cleanNumber.length < 10) {
+                pairCodeElem.textContent = 'INVALID';
+                pairCodeElem.style.color = '#ff3333';
+                showNotification('Invalid number format');
+                setTimeout(() => {
+                    pairCodeElem.textContent = 'XXXXXXXX';
+                    pairCodeElem.style.color = '#00ffff';
+                }, 2000);
+                return;
+            }
+
+            pairCodeElem.textContent = 'LOADING...';
+            
+            // Connect to backend to get real paircode
+            fetch('/api/connect', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phoneNumber: cleanNumber })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.pairingCode) {
+                    pairCodeElem.textContent = data.pairingCode;
+                    showNotification('Pair code generated!');
+                } else {
+                    pairCodeElem.textContent = 'ERROR';
+                    pairCodeElem.style.color = '#ff3333';
+                    showNotification(data.error || 'Failed to generate pair code');
+                    setTimeout(() => {
+                        pairCodeElem.textContent = 'XXXXXXXX';
+                        pairCodeElem.style.color = '#00ffff';
+                    }, 2000);
+                }
+            })
+            .catch(err => {
+                pairCodeElem.textContent = 'ERROR';
+                pairCodeElem.style.color = '#ff3333';
+                showNotification(err.message || 'Connection error');
+                setTimeout(() => {
+                    pairCodeElem.textContent = 'XXXXXXXX';
+                    pairCodeElem.style.color = '#00ffff';
+                }, 2000);
+            });
+        });
+
+        copyBtn.addEventListener('click', () => {
+            const pairCode = pairCodeElem.textContent;
+            if (pairCode && pairCode !== 'XXXXXXXX' && pairCode !== 'ERROR' && pairCode !== 'INVALID' && pairCode !== 'LOADING...') {
+                navigator.clipboard.writeText(pairCode)
+                    .then(() => {
+                        showNotification('Pair code copied to clipboard!');
+                    })
+                    .catch(err => {
+                        showNotification('Failed to copy: ' + err);
+                    });
+            }
+        });
+    </script>
+</body>
+</html>
