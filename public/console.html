@@ -1,0 +1,939 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FENIX ID Bot Console</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #000;
+            color: #0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            opacity: 0.15;
+        }
+        
+        .header {
+            background-color: rgba(0, 20, 0, 0.8);
+            color: #0f0;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #0f0;
+            box-shadow: 0 0 10px #0f0;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 1.6rem;
+            font-weight: 700;
+            text-shadow: 0 0 5px #0f0;
+            letter-spacing: 1px;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background-color: #0f0;
+            border-radius: 50%;
+            margin-right: 8px;
+            box-shadow: 0 0 10px #0f0;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; box-shadow: 0 0 5px #0f0; }
+            50% { opacity: 0.6; box-shadow: 0 0 15px #0f0; }
+            100% { opacity: 1; box-shadow: 0 0 5px #0f0; }
+        }
+        
+        .status-text {
+            font-size: 14px;
+            color: #0f0;
+            text-shadow: 0 0 5px #0f0;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .console {
+            flex: 1;
+            background-color: rgba(0, 10, 0, 0.8);
+            padding: 20px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            scrollbar-width: thin;
+            scrollbar-color: #0f0 #000;
+            border-left: 1px solid #0f0;
+            box-shadow: inset 0 0 10px #0f0;
+        }
+        
+        .console::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .console::-webkit-scrollbar-track {
+            background: #000;
+            box-shadow: inset 0 0 3px #0f0;
+        }
+        
+        .console::-webkit-scrollbar-thumb {
+            background-color: #0f0;
+            border-radius: 4px;
+            box-shadow: 0 0 5px #0f0;
+        }
+        
+        .console-input {
+            display: flex;
+            background-color: rgba(0, 20, 0, 0.9);
+            padding: 12px 15px;
+            border-top: 1px solid #0f0;
+            align-items: center;
+            box-shadow: 0 0 10px #0f0;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .console-input span {
+            color: #0f0;
+            margin-right: 10px;
+            font-weight: bold;
+            text-shadow: 0 0 5px #0f0;
+        }
+        
+        .console-input input {
+            flex: 1;
+            background-color: rgba(0, 20, 0, 0.5);
+            border: 1px solid #0f0;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            outline: none;
+            padding: 8px;
+            box-shadow: inset 0 0 5px #0f0;
+            border-radius: 4px;
+        }
+        
+        .log {
+            margin-bottom: 8px;
+            line-height: 1.5;
+            position: relative;
+            padding-left: 20px;
+            text-shadow: 0 0 2px #0f0;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .log::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 6px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            box-shadow: 0 0 5px;
+        }
+        
+        .command {
+            color: #00ffff;
+            font-weight: bold;
+        }
+        
+        .command::before {
+            background-color: #00ffff;
+            box-shadow: 0 0 5px #00ffff;
+        }
+        
+        .output {
+            color: #0f0;
+        }
+        
+        .output::before {
+            background-color: #0f0;
+            box-shadow: 0 0 5px #0f0;
+        }
+        
+        .error {
+            color: #ff0000;
+        }
+        
+        .error::before {
+            background-color: #ff0000;
+            box-shadow: 0 0 5px #ff0000;
+        }
+        
+        .status {
+            color: #0f0;
+        }
+        
+        .status::before {
+            background-color: #0f0;
+            box-shadow: 0 0 5px #0f0;
+        }
+        
+        .info {
+            color: #00ffff;
+        }
+        
+        .info::before {
+            background-color: #00ffff;
+            box-shadow: 0 0 5px #00ffff;
+        }
+        
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            background-color: rgba(0, 20, 0, 0.8);
+            padding: 8px 15px;
+            border-bottom: 1px solid #0f0;
+            box-shadow: 0 0 10px #0f0;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .toolbar-buttons {
+            display: flex;
+        }
+        
+        .toolbar button {
+            background-color: rgba(0, 50, 0, 0.8);
+            color: #0f0;
+            border: 1px solid #0f0;
+            border-radius: 4px;
+            padding: 5px 10px;
+            margin-left: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            box-shadow: 0 0 5px #0f0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .toolbar button:hover {
+            background-color: rgba(0, 100, 0, 0.8);
+            box-shadow: 0 0 10px #0f0;
+        }
+        
+        .toolbar button i {
+            margin-right: 5px;
+        }
+        
+        .social-buttons a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            margin-left: 10px;
+            border-radius: 50%;
+            background-color: rgba(0, 50, 0, 0.8);
+            color: #0f0;
+            text-decoration: none;
+            border: 1px solid #0f0;
+            box-shadow: 0 0 5px #0f0;
+            transition: all 0.2s;
+        }
+        
+        .social-buttons a:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px #0f0;
+        }
+        
+        .timestamp {
+            color: #00aa00;
+            font-size: 0.8em;
+            margin-right: 8px;
+        }
+        
+        .sidebar {
+            width: 300px;
+            background-color: rgba(0, 10, 0, 0.9);
+            border-right: 1px solid #0f0;
+            box-shadow: 0 0 10px #0f0;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            z-index: 1;
+        }
+        
+        .pair-code-container {
+            background-color: rgba(0, 20, 0, 0.8);
+            border: 1px solid #0f0;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px #0f0;
+            text-align: center;
+        }
+        
+        .pair-code-container h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #0f0;
+            font-size: 1.2rem;
+            text-shadow: 0 0 5px #0f0;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            background-color: rgba(0, 20, 0, 0.5);
+            border: 1px solid #0f0;
+            border-radius: 4px;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            box-shadow: inset 0 0 5px #0f0;
+            outline: none;
+        }
+        
+        .pair-code-display {
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            color: #0f0;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: rgba(0, 30, 0, 0.8);
+            border: 1px solid #0f0;
+            border-radius: 4px;
+            letter-spacing: 2px;
+            font-weight: bold;
+            text-shadow: 0 0 5px #0f0;
+            box-shadow: inset 0 0 5px #0f0;
+        }
+        
+        .pair-code-buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .pair-code-buttons button {
+            flex: 1;
+            margin: 0 5px;
+            padding: 8px;
+            background-color: rgba(0, 50, 0, 0.8);
+            color: #0f0;
+            border: 1px solid #0f0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 0 5px #0f0;
+            transition: all 0.2s;
+        }
+        
+        .pair-code-buttons button:hover {
+            background-color: rgba(0, 100, 0, 0.8);
+            box-shadow: 0 0 10px #0f0;
+        }
+        
+        .status-container {
+            background-color: rgba(0, 20, 0, 0.8);
+            border: 1px solid #0f0;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px #0f0;
+        }
+        
+        .status-container h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #0f0;
+            font-size: 1.2rem;
+            text-shadow: 0 0 5px #0f0;
+            text-align: center;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+        }
+        
+        .status-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .status-label {
+            font-weight: bold;
+        }
+        
+        .typing-effect {
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 4px solid #0f0;
+            width: 0;
+            animation: typing 3s steps(30, end) forwards, blink-caret 0.75s step-end infinite;
+        }
+        
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #0f0 }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-canvas"></canvas>
+    
+    <div class="header">
+        <h1>FENIX ID WhatsApp Bot Console</h1>
+        <div class="header-right">
+            <div class="status-indicator"></div>
+            <span class="status-text">Online</span>
+        </div>
+    </div>
+    
+    <div class="toolbar">
+        <div class="toolbar-buttons">
+            <button id="btn-clear"><i class="fas fa-broom"></i> Clear</button>
+            <button id="btn-help"><i class="fas fa-question-circle"></i> Help</button>
+            <button id="btn-restart"><i class="fas fa-sync"></i> Restart</button>
+        </div>
+        <div class="social-buttons">
+            <a href="https://wa.me/94773010580" target="_blank" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://t.me/fenix_tools" target="_blank" title="Telegram"><i class="fab fa-telegram"></i></a>
+            <a href="https://www.youtube.com/" target="_blank" title="YouTube"><i class="fab fa-youtube"></i></a>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="sidebar">
+            <div class="pair-code-container">
+                <h3>Pairing Code Generator</h3>
+                <div class="input-group">
+                    <input type="text" id="phoneNumber" placeholder="WhatsApp Number (with country code)" />
+                </div>
+                <div class="pair-code-display" id="pairCode">XXXXXXXX</div>
+                <div class="pair-code-buttons">
+                    <button id="generateBtn"><i class="fas fa-sync-alt"></i> Generate</button>
+                    <button id="copyBtn"><i class="fas fa-copy"></i> Copy</button>
+                </div>
+            </div>
+            
+            <div class="status-container">
+                <h3>System Status</h3>
+                <div class="status-item">
+                    <span class="status-label">Bot:</span>
+                    <span class="status-value"><span class="status-indicator"></span> Active</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Connection:</span>
+                    <span class="status-value">Stable</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Auth:</span>
+                    <span class="status-value">Valid</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">API:</span>
+                    <span class="status-value">Online</span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="console" class="console">
+            <div class="log status"><span class="timestamp">[${getCurrentTime()}]</span> <span class="typing-effect">System initialized. FENIX ID WhatsApp Bot Console v2.0</span></div>
+            <div class="log status"><span class="timestamp">[${getCurrentTime()}]</span> Connection status: Active</div>
+            <div class="log info"><span class="timestamp">[${getCurrentTime()}]</span> Type 'help' for available commands</div>
+        </div>
+    </div>
+    
+    <div class="console-input">
+        <span>$</span>
+        <input type="text" id="input" placeholder="Enter command..." autocomplete="off">
+    </div>
+
+    <script>
+        // Matrix effect
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        const characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%\"'#&_(),.;:?!\\|{}<>[]^~";
+        const fontSize = 14;
+        const columns = Math.floor(canvas.width / fontSize);
+        
+        const drops = [];
+        for (let i = 0; i < columns; i++) {
+            drops[i] = Math.floor(Math.random() * -30);
+        }
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#0f0';
+            ctx.font = `${fontSize}px monospace`;
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = characters[Math.floor(Math.random() * characters.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.98) {
+                    drops[i] = 0;
+                }
+                
+                drops[i]++;
+            }
+            
+            requestAnimationFrame(drawMatrix);
+        }
+        
+        drawMatrix();
+        
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toLocaleTimeString('en-US', { 
+                hour12: false, 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        const consoleElem = document.getElementById('console');
+        const inputElem = document.getElementById('input');
+        const btnClear = document.getElementById('btn-clear');
+        const btnHelp = document.getElementById('btn-help');
+        const btnRestart = document.getElementById('btn-restart');
+        const phoneNumberInput = document.getElementById('phoneNumber');
+        const pairCodeElem = document.getElementById('pairCode');
+        const generateBtn = document.getElementById('generateBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        
+        // Copy Pair Code Button
+        copyBtn.addEventListener('click', () => {
+            const pairCode = pairCodeElem.textContent;
+            if (pairCode && pairCode !== 'XXXXXXXX') {
+                navigator.clipboard.writeText(pairCode)
+                    .then(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                        setTimeout(() => {
+                            copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+                        }, 2000);
+                        addLog('[SYSTEM] Pair code copied to clipboard', 'status');
+                    })
+                    .catch(err => {
+                        addLog('[ERROR] Failed to copy: ' + err, 'error');
+                    });
+            }
+        });
+        
+        // Generate Pair Code Button
+        generateBtn.addEventListener('click', () => {
+            const phoneNumber = phoneNumberInput.value.trim();
+            
+            if (!phoneNumber) {
+                pairCodeElem.textContent = 'ERROR';
+                pairCodeElem.style.color = '#ff0000';
+                addLog('[ERROR] Please enter a WhatsApp number', 'error');
+                setTimeout(() => {
+                    pairCodeElem.textContent = 'XXXXXXXX';
+                    pairCodeElem.style.color = '#0f0';
+                }, 2000);
+                return;
+            }
+            
+            // Clean number - remove non-numeric characters
+            const cleanNumber = phoneNumber.replace(/\D/g, '');
+            
+            if (cleanNumber.length < 10) {
+                pairCodeElem.textContent = 'INVALID';
+                pairCodeElem.style.color = '#ff0000';
+                addLog('[ERROR] Invalid number format', 'error');
+                setTimeout(() => {
+                    pairCodeElem.textContent = 'XXXXXXXX';
+                    pairCodeElem.style.color = '#0f0';
+                }, 2000);
+                return;
+            }
+            
+            pairCodeElem.textContent = 'LOADING...';
+            addLog(`[SYSTEM] Generating pair code for ${cleanNumber}...`, 'status');
+            
+            // Connect to backend to get real paircode
+            fetch('/api/connect', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phoneNumber: cleanNumber })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.pairingCode) {
+                    pairCodeElem.textContent = data.pairingCode;
+                    addLog(`[SYSTEM] Pair code generated: ${data.pairingCode}`, 'status');
+                    addLog('[SYSTEM] Enter this code in your WhatsApp app', 'info');
+                } else {
+                    pairCodeElem.textContent = 'ERROR';
+                    pairCodeElem.style.color = '#ff0000';
+                    addLog(`[ERROR] ${data.error || 'Failed to generate pair code'}`, 'error');
+                    setTimeout(() => {
+                        pairCodeElem.textContent = 'XXXXXXXX';
+                        pairCodeElem.style.color = '#0f0';
+                    }, 2000);
+                }
+            })
+            .catch(err => {
+                pairCodeElem.textContent = 'ERROR';
+                pairCodeElem.style.color = '#ff0000';
+                addLog(`[ERROR] ${err.message}`, 'error');
+                setTimeout(() => {
+                    pairCodeElem.textContent = 'XXXXXXXX';
+                    pairCodeElem.style.color = '#0f0';
+                }, 2000);
+            });
+        });
+        
+        const commands = {
+            help: {
+                description: 'Show available commands',
+                execute: () => {
+                    let output = '[HELP] Available commands:\n';
+                    for (const cmd in commands) {
+                        output += `  - ${cmd}: ${commands[cmd].description}\n`;
+                    }
+                    return output;
+                }
+            },
+            status: {
+                description: 'Show bot status',
+                execute: () => {
+                    return '[STATUS] Bot is running\n[STATUS] Web Interface: Online\n[STATUS] Connection: Active';
+                }
+            },
+            clear: {
+                description: 'Clear console',
+                execute: () => {
+                    consoleElem.innerHTML = '';
+                    return null;
+                }
+            },
+            about: {
+                description: 'Show information about the bot',
+                execute: () => {
+                    return '[INFO] FENIX ID WhatsApp Bot\n[INFO] Version: 2.0\n[INFO] Telegram: @fenix_tools\n[INFO] GitHub: FENIXID-SERVER';
+                }
+            },
+            restart: {
+                description: 'Restart the bot',
+                execute: () => {
+                    fetch('/api/restart', { method: 'POST' })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                addLog('[SYSTEM] Bot restarting...', 'status');
+                            } else {
+                                addLog('[ERROR] Failed to restart bot: ' + data.error, 'error');
+                            }
+                        })
+                        .catch(err => {
+                            addLog('[ERROR] Failed to restart bot: ' + err.message, 'error');
+                        });
+                    return '[SYSTEM] Sending restart command...';
+                }
+            },
+            connect: {
+                description: 'Connect to WhatsApp (usage: connect <phone_number>)',
+                execute: (args) => {
+                    if (!args || args.length === 0) {
+                        return '[ERROR] Please provide a phone number (e.g., connect 94773010580)';
+                    }
+                    
+                    const phoneNumber = args[0];
+                    if (!/^\d+$/.test(phoneNumber)) {
+                        return '[ERROR] The number must be numeric!';
+                    } else if (phoneNumber.length < 10) {
+                        return '[ERROR] Invalid number! Please enter a valid WhatsApp number including country code.';
+                    }
+                    
+                    fetch('/api/connect', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ phoneNumber })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.pairingCode) {
+                            pairCodeElem.textContent = data.pairingCode;
+                            phoneNumberInput.value = phoneNumber;
+                            addLog(`[SYSTEM] Pairing code: ${data.pairingCode}`, 'status');
+                            addLog('[SYSTEM] Enter this code in your WhatsApp app', 'status');
+                        } else {
+                            addLog(`[ERROR] ${data.error || 'Failed to get pairing code'}`, 'error');
+                        }
+                    })
+                    .catch(err => {
+                        addLog(`[ERROR] ${err.message}`, 'error');
+                    });
+                    
+                    return '[SYSTEM] Requesting pairing code...';
+                }
+            },
+            credentials: {
+                description: 'Show or save credentials',
+                execute: (args) => {
+                    if (args && args[0] === 'save') {
+                        fetch('/api/save-credentials', { method: 'POST' })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    addLog('[SYSTEM] Credentials saved successfully', 'status');
+                                } else {
+                                    addLog(`[ERROR] ${data.error || 'Failed to save credentials'}`, 'error');
+                                }
+                            })
+                            .catch(err => {
+                                addLog(`[ERROR] ${err.message}`, 'error');
+                            });
+                        return '[SYSTEM] Saving credentials...';
+                    } else {
+                        fetch('/api/credentials')
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    addLog('[SYSTEM] Credentials info:', 'status');
+                                    addLog(JSON.stringify(data.info, null, 2));
+                                } else {
+                                    addLog(`[ERROR] ${data.error || 'Failed to get credentials info'}`, 'error');
+                                }
+                            })
+                            .catch(err => {
+                                addLog(`[ERROR] ${err.message}`, 'error');
+                            });
+                        return '[SYSTEM] Fetching credentials info...';
+                    }
+                }
+            },
+            send: {
+                description: 'Send message (usage: send <number> <message>)',
+                execute: (args) => {
+                    if (!args || args.length < 2) {
+                        return '[ERROR] Usage: send <number> <message>';
+                    }
+                    
+                    const phoneNumber = args[0];
+                    const message = args.slice(1).join(' ');
+                    
+                    if (!/^\d+$/.test(phoneNumber)) {
+                        return '[ERROR] The number must be numeric!';
+                    }
+                    
+                    fetch('/api/send-message', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ to: phoneNumber, message })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            addLog('[SYSTEM] Message sent successfully', 'status');
+                        } else {
+                            addLog(`[ERROR] ${data.error || 'Failed to send message'}`, 'error');
+                        }
+                    })
+                    .catch(err => {
+                        addLog(`[ERROR] ${err.message}`, 'error');
+                    });
+                    
+                    return `[SYSTEM] Sending message to ${phoneNumber}...`;
+                }
+            }
+        };
+
+        function addLog(text, type = 'output') {
+            const logElement = document.createElement('div');
+            logElement.className = `log ${type}`;
+            
+            // Add timestamp
+            const timestampSpan = document.createElement('span');
+            timestampSpan.className = 'timestamp';
+            timestampSpan.textContent = `[${getCurrentTime()}]`;
+            
+            logElement.appendChild(timestampSpan);
+            
+            const contentNode = document.createTextNode(' ' + text);
+            logElement.appendChild(contentNode);
+            
+            consoleElem.appendChild(logElement);
+            consoleElem.scrollTop = consoleElem.scrollHeight;
+        }
+
+        inputElem.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const command = inputElem.value.trim();
+                inputElem.value = '';
+                
+                if (command) {
+                    addLog(`$ ${command}`, 'command');
+                    
+                    const args = command.split(' ');
+                    const cmd = args[0].toLowerCase();
+                    
+                    if (cmd in commands) {
+                        const output = commands[cmd].execute(args.slice(1));
+                        if (output) {
+                            addLog(output);
+                        }
+                    } else {
+                        addLog(`Command not found: ${cmd}`, 'error');
+                    }
+                }
+            }
+        });
+
+        // Button event listeners
+        btnClear.addEventListener('click', () => {
+            consoleElem.innerHTML = '';
+            addLog('Console cleared', 'status');
+        });
+
+        btnHelp.addEventListener('click', () => {
+            addLog('$ help', 'command');
+            addLog(commands.help.execute());
+        });
+
+        btnRestart.addEventListener('click', () => {
+            addLog('$ restart', 'command');
+            addLog(commands.restart.execute());
+        });
+
+        // Command history functionality
+        let commandHistory = [];
+        let historyIndex = -1;
+
+        inputElem.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp') {
+                if (commandHistory.length > 0) {
+                    historyIndex = Math.min(historyIndex + 1, commandHistory.length - 1);
+                    inputElem.value = commandHistory[historyIndex];
+                    // Move cursor to end of input
+                    setTimeout(() => {
+                        inputElem.selectionStart = inputElem.selectionEnd = inputElem.value.length;
+                    }, 0);
+                }
+                e.preventDefault();
+            } else if (e.key === 'ArrowDown') {
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    inputElem.value = commandHistory[historyIndex];
+                } else if (historyIndex === 0) {
+                    historyIndex = -1;
+                    inputElem.value = '';
+                }
+                e.preventDefault();
+            } else if (e.key === 'Enter') {
+                const command = inputElem.value.trim();
+                if (command) {
+                    // Add to beginning of array (most recent first)
+                    commandHistory.unshift(command);
+                    // Keep history at max 50 items
+                    if (commandHistory.length > 50) {
+                        commandHistory.pop();
+                    }
+                    historyIndex = -1;
+                }
+            }
+        });
+
+        // Tab completion
+        inputElem.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const currentInput = inputElem.value.trim();
+                
+                if (currentInput) {
+                    const possibleCommands = Object.keys(commands).filter(cmd => 
+                        cmd.startsWith(currentInput)
+                    );
+                    
+                    if (possibleCommands.length === 1) {
+                        inputElem.value = possibleCommands[0] + ' ';
+                    } else if (possibleCommands.length > 1) {
+                        addLog('Possible commands:', 'info');
+                        addLog(possibleCommands.join(', '), 'info');
+                    }
+                }
+            }
+        });
+
+        // Focus the input when the page loads
+        window.addEventListener('load', () => {
+            inputElem.focus();
+            
+            // Add typewriter effect to intro text
+            const typeElements = document.querySelectorAll('.typing-effect');
+            typeElements.forEach(el => {
+                el.style.width = '0';
+                setTimeout(() => {
+                    el.style.animation = 'typing 3s steps(30, end) forwards, blink-caret 0.75s step-end infinite';
+                }, 500);
+            });
+        });
+
+        // Keep input focused when clicking anywhere in the console
+        document.addEventListener('click', (e) => {
+            // Don't focus input if clicking on buttons or inputs in the sidebar
+            const isClickableElement = e.target.tagName === 'BUTTON' || 
+                                       e.target.tagName === 'INPUT' ||
+                                       e.target.tagName === 'A' ||
+                                       e.target.closest('button') ||
+                                       e.target.closest('a');
+            
+            if (!isClickableElement) {
+                inputElem.focus();
+            }
+        });
+    </script>
+</body>
+</html>

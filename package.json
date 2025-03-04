@@ -1,0 +1,21 @@
+{
+  "name": "whatsapp-bot-pairing-code",
+  "version": "1.0.0",
+  "description": "A WhatsApp bot script to generate pairing codes and save session credentials.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.0.0",
+    "express": "^4.21.2",
+    "pino": "^8.0.0"
+  },
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "pairing-code"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

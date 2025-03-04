@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Login</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="login-card">
+            <div class="header">
+                <img src="https://bit.ly/41Bu9fc" alt="Logo" class="logo">
+                <h1>WhatsApp Connection</h1>
+            </div>
+            <div class="form-container">
+                <div class="input-group">
+                    <label for="phoneNumber">Enter Your WhatsApp Number</label>
+                    <div class="input-field">
+                        <input type="text" id="phoneNumber" placeholder="e.g., 94773010580" required>
+                        <small>Include your country code without + or spaces</small>
+                    </div>
+                </div>
+                <button id="connectBtn" class="connect-btn">
+                    <i class="fas fa-link"></i> Get Pairing Code
+                </button>
+                <div id="loader" class="loader hidden"></div>
+            </div>
+            <div id="resultContainer" class="result-container hidden">
+                <h3>Your Pairing Code:</h3>
+                <div id="pairingCode" class="pairing-code"></div>
+                <p class="instructions">
+                    1. Open WhatsApp on your phone<br>
+                    2. Go to Settings > Linked Devices<br>
+                    3. Tap on "Link a Device"<br>
+                    4. Enter the pairing code above
+                </p>
+                <div class="status-message">
+                    <div id="statusIcon" class="status-icon pending">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                    <span id="statusText">Waiting for connection...</span>
+                </div>
+            </div>
+            <div id="errorContainer" class="error-container hidden">
+                <div class="error-icon"><i class="fas fa-exclamation-circle"></i></div>
+                <div id="errorMessage"></div>
+            </div>
+        </div>
+        <div class="footer">
+            <p>FENIX ID SERVER VIP KADPL</p>
+            <div class="social-links">
+                <a href="https://t.me/fenix_tools" target="_blank"><i class="fab fa-telegram"></i></a>
+                <a href="https://github.com/FENIXID-SERVER" target="_blank"><i class="fab fa-github"></i></a>
+                <a href="https://www.youtube.com/@fenix_id" target="_blank"><i class="fab fa-youtube"></i></a>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
