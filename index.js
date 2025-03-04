@@ -389,7 +389,7 @@ app.get('/', (req, res) => {
                     </ul>
                 </div>
                 <div class="footer">
-                    <p>Powered by FENIX ID Server | Telegram: <a href="https://t.me/fenix_tools">@fenix_tools</a> | <a href="/console" style="color: #075e54; font-weight: bold;">Open Console</a></p>
+                    <p>Powered by FENIX ID Server | Telegram: <a href="https://t.me/fenix_tools">@fenix_tools</a> | <a href="/console" style="color: #075e54; font-weight: bold;">Open Console</a> | <a href="/pairing" style="color: #075e54; font-weight: bold;">Pairing Code Generator</a></p>
                 </div>
             </div>
         </body>
@@ -405,6 +405,11 @@ app.get('/status', (req, res) => {
 // Console route
 app.get('/console', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/console.html'));
+});
+
+// Pairing page route
+app.get('/pairing', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/pairing.html'));
 });
 
 // Start the Express server
