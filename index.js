@@ -324,19 +324,26 @@ app.post('/api/send-message', async (req, res) => {
 app.post('/api/clear-session', (req, res) => {
     try {
         const authorizedFolderPath = path.join(__dirname, 'Authorized');
+
         if (fs.existsSync(authorizedFolderPath)) {
             fs.rmSync(authorizedFolderPath, { recursive: true, force: true });
             console.log('Authorized folder deleted successfully.');
-            res.json({ success: true, message: 'Authorized folder deleted successfully' });
         } else {
-            res.json({ success: true, message: 'Authorized folder does not exist' });
+            console.log('Authorized folder does not exist.');
         }
+
+        res.json({ success: true, message: 'Session cleared. Restarting bot...' });
+
+        // Restart the bot safely
+        setTimeout(() => {
+            process.exit(0); // Heroku will automatically restart the app
+        }, 1000);
+
     } catch (error) {
-        console.error('Error deleting Authorized folder:', error);
-        res.json({ success: false, error: error.message || 'Failed to delete Authorized folder' });
+        console.error('Error clearing session:', error);
+        res.json({ success: false, error: error.message || 'Failed to clear session' });
     }
 });
-
 // Home route
 app.get('/', (req, res) => {
     res.send(`
