@@ -193,7 +193,10 @@
         <div class="button-container">
             <button id="generateBtn"><i class="fas fa-sync-alt"></i> Generate</button>
             <button id="copyBtn"><i class="fas fa-copy"></i> Copy</button>
-            <button id="restartBtn"><i class="fas fa-redo"></i> Restart</button>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <button id="clearSessionBtn" style="width: 100%;"><i class="fas fa-trash"></i> Clear Session</button>
         </div>
         
         <div class="social-buttons">
@@ -253,6 +256,7 @@
         const pairCodeElem = document.getElementById('pairCode');
         const generateBtn = document.getElementById('generateBtn');
         const copyBtn = document.getElementById('copyBtn');
+        const clearSessionBtn = document.getElementById('clearSessionBtn');
         const notification = document.getElementById('notification');
 
         function showNotification(message, duration = 2000) {
@@ -339,41 +343,22 @@
             }
         });
         
-        // Restart button functionality - deletes Authorized folder and restarts bot
-        const restartBtn = document.getElementById('restartBtn');
-        restartBtn.addEventListener('click', () => {
-            showNotification('Deleting session and restarting...');
-            
-            // Send request to delete Authorized folder
-            fetch('/api/delete-auth', { method: 'POST' })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotification('Session deleted, restarting bot...');
-                        
-                        // Then restart the bot
-                        fetch('/api/restart', { method: 'POST' })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    showNotification('Bot is restarting...', 3000);
-                                    setTimeout(() => {
-                                        window.location.reload();
-                                    }, 3000);
-                                } else {
-                                    showNotification('Failed to restart bot: ' + (data.error || 'Unknown error'));
-                                }
-                            })
-                            .catch(err => {
-                                showNotification('Failed to restart bot: ' + err.message);
-                            });
-                    } else {
-                        showNotification('Failed to delete session: ' + (data.error || 'Unknown error'));
-                    }
-                })
-                .catch(err => {
-                    showNotification('Failed to delete session: ' + err.message);
-                });
+        clearSessionBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear the session? This will delete the Authorized folder and disconnect from WhatsApp.')) {
+                fetch('/api/clear-session', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showNotification('Session cleared: ' + data.message);
+                            pairCodeElem.textContent = 'XXXXXXXX';
+                        } else {
+                            showNotification('Failed to clear session: ' + data.error);
+                        }
+                    })
+                    .catch(err => {
+                        showNotification('Error: ' + err.message);
+                    });
+            }
         });
     </script>
 </body>

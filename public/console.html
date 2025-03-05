@@ -432,6 +432,7 @@
             <button id="btn-clear"><i class="fas fa-broom"></i> Clear</button>
             <button id="btn-help"><i class="fas fa-question-circle"></i> Help</button>
             <button id="btn-restart"><i class="fas fa-sync"></i> Restart</button>
+            <button id="btn-clear-session"><i class="fas fa-trash"></i> Clear Session</button>
         </div>
         <div class="social-buttons">
             <a href="https://wa.me/94773010580" target="_blank" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
@@ -547,6 +548,7 @@
         const btnClear = document.getElementById('btn-clear');
         const btnHelp = document.getElementById('btn-help');
         const btnRestart = document.getElementById('btn-restart');
+        const btnClearSession = document.getElementById('btn-clear-session');
         const phoneNumberInput = document.getElementById('phoneNumber');
         const pairCodeElem = document.getElementById('pairCode');
         const generateBtn = document.getElementById('generateBtn');
@@ -788,6 +790,25 @@
                     
                     return `[SYSTEM] Sending message to ${phoneNumber}...`;
                 }
+            },
+            'clear-session': {
+                description: 'Clear the session and delete Authorized folder',
+                execute: () => {
+                    fetch('/api/clear-session', { method: 'POST' })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                addLog('[SYSTEM] Session cleared: ' + data.message, 'status');
+                                addLog('[SYSTEM] Disconnected from WhatsApp. Please reconnect.', 'status');
+                            } else {
+                                addLog('[ERROR] Failed to clear session: ' + data.error, 'error');
+                            }
+                        })
+                        .catch(err => {
+                            addLog('[ERROR] Failed to clear session: ' + err.message, 'error');
+                        });
+                    return '[SYSTEM] Clearing session...';
+                }
             }
         };
 
@@ -845,23 +866,27 @@
 
         btnRestart.addEventListener('click', () => {
             addLog('$ restart', 'command');
-            
-            // First delete the Authorized folder, then restart
-            fetch('/api/delete-auth', { method: 'POST' })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        addLog('[SYSTEM] Authorized folder deleted successfully', 'status');
-                        // Then restart the bot
-                        addLog('[SYSTEM] Restarting bot...', 'status');
-                        commands.restart.execute();
-                    } else {
-                        addLog(`[ERROR] Failed to delete Authorized folder: ${data.error}`, 'error');
-                    }
-                })
-                .catch(err => {
-                    addLog(`[ERROR] Failed to delete Authorized folder: ${err.message}`, 'error');
-                });
+            addLog(commands.restart.execute());
+        });
+        
+        btnClearSession.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear the session? This will delete the Authorized folder and disconnect from WhatsApp.')) {
+                addLog('$ clear-session', 'command');
+                
+                fetch('/api/clear-session', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            addLog('[SYSTEM] Session cleared: ' + data.message, 'status');
+                            addLog('[SYSTEM] Disconnected from WhatsApp. Please reconnect.', 'status');
+                        } else {
+                            addLog('[ERROR] Failed to clear session: ' + data.error, 'error');
+                        }
+                    })
+                    .catch(err => {
+                        addLog('[ERROR] Failed to clear session: ' + err.message, 'error');
+                    });
+            }
         });
 
         // Command history functionality
