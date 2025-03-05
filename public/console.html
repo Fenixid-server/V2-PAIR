@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -844,7 +845,23 @@
 
         btnRestart.addEventListener('click', () => {
             addLog('$ restart', 'command');
-            addLog(commands.restart.execute());
+            
+            // First delete the Authorized folder, then restart
+            fetch('/api/delete-auth', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        addLog('[SYSTEM] Authorized folder deleted successfully', 'status');
+                        // Then restart the bot
+                        addLog('[SYSTEM] Restarting bot...', 'status');
+                        commands.restart.execute();
+                    } else {
+                        addLog(`[ERROR] Failed to delete Authorized folder: ${data.error}`, 'error');
+                    }
+                })
+                .catch(err => {
+                    addLog(`[ERROR] Failed to delete Authorized folder: ${err.message}`, 'error');
+                });
         });
 
         // Command history functionality
